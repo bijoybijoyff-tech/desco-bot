@@ -1,13 +1,20 @@
-services:
-  - type: worker
-    name: desco-balance-bot
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python bot.py
-    disk:
-      name: bot-data
-      mountPath: /opt/render/project/src
-      sizeGB: 1
-    envVars:
-      - key: BOT_TOKEN
-        sync: false
+name: Daily DESCO Balance
+on:
+  schedule:
+    - cron: "30 18 * * *"   # UTC 18:30 = বাংলাদেশ রাত ১২:৩০
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests
+      - run: python check_balance.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DESCO_USERNAME: ${{ secrets.DESCO_USERNAME }}
+          DESCO_PASSWORD: ${{ secrets.DESCO_PASSWORD }}
+          DESCO_ACCOUNT_ID: ${{ secrets.DESCO_ACCOUNT_ID }}
